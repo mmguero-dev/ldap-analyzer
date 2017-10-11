@@ -413,7 +413,6 @@ refine connection LDAP_Conn += {
                 {
                     gssapi->DeliverStream(pdu->sasl().length(), pdu->sasl().begin(), is_orig);
                 }
-	    }
         return true;
         %}
 };
