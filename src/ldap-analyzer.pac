@@ -209,15 +209,17 @@ refine connection LDAP_Conn += {
 	
 	%cleanup{
 	
-	    if(gssapi)  {
+	    if ( gssapi ) 
+                {
 	        gssapi->Done();
 	        delete gssapi;
-	    }
+	        }
 	    
-	    if(krb5)  {
+	    if ( krb5 ) 
+                {
 	        krb5->Done();
 	        delete krb5;
-	    }
+	        }
 	%}
 
 	function SetPDU(is_orig: bool): bool
@@ -378,19 +380,22 @@ refine connection LDAP_Conn += {
 	                bro_analyzer()->Conn(),
                     build_bindreq_pdu(pdu));
                     
-                if(memcmp("\x47\x53\x53\x2d\x53\x50\x4e\x45\x47\x4f", asn1_octet_string_to_val(pdu->mechanism())->Bytes(), 10) == 0)  {
+                if( memcmp("\x47\x53\x53\x2d\x53\x50\x4e\x45\x47\x4f", asn1_octet_string_to_val(pdu->mechanism())->Bytes(), 10) == 0 )  
+                    {
                     // "GSS-SPNEGO"
-                    if(!gssapi)  {
+                    if( ! gssapi )  
+                        {
 		        
 		        gssapi = analyzer_mgr->InstantiateAnalyzer("GSSAPI", bro_analyzer()->Conn()); 
-		    }
+		        }
 		
-	            if(gssapi)  {
+	            if( gssap i)  
+                        {
 	                
 	                gssapi->DeliverStream(pdu->gssapi().length(), pdu->gssapi().begin(), is_orig);
 	                
-	            }
-                }
+	                }
+                    }
                                      
 		return true;
 		%}
@@ -400,18 +405,14 @@ refine connection LDAP_Conn += {
             BifEvent::generate_ldap_bind_res(bro_analyzer(),
 	                bro_analyzer()->Conn(),
                         build_ldap_res(pdu->result()));
-        
-            if ( ${pdu.oid2}->encoding()->meta()->length() == 9 &&
-	     		  (memcmp("\x2a\x86\x48\x86\xf7\x12\x01\x02\x02", asn1_oid_to_val(pdu->oid2())->Bytes(), pdu->oid2()->encoding()->meta()->length()) == 0 ||
-	     		  memcmp("\x2a\x86\x48\x82\xf7\x12\x01\x02\x02", asn1_oid_to_val(pdu->oid2())->Bytes(), pdu->oid2()->encoding()->meta()->length()) == 0 ) )  {
-	        // krb5 && ms-krb5 			
-	        if ( ! krb5 ) 				
-	            krb5 = analyzer_mgr->InstantiateAnalyzer("KRB", bro_analyzer()->Conn());
-	         
-                if ( krb5 && memcmp("\x02\x00", pdu->blob().begin(), 2) == 0 )  { 				
-	            // 0x0200 is an AP_REP
-	            krb5->DeliverPacket(pdu->blob().length()-2, pdu->blob().begin()+2, is_orig, 0, 0, 0);				
-	        } 			
+
+            if ( ! gssapi )
+                gssapi = analyzer_mgr->InstantiateAnalyzer("GSSAPI", bro_analyzer()->Conn());
+
+            if ( gssapi )
+                {
+                    gssapi->DeliverPacket(pdu->sasl().length(), pdu->sasl().begin(), is_orig);
+                }
 	    }
         return true;
         %}

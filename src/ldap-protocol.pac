@@ -51,16 +51,7 @@ type BindReqPDU(messageID : ASN1Integer, is_orig: bool) = record {
 type BindResPDU(messageID: ASN1Integer, is_orig: bool) = record  {
     result          : LDAPResult(messageID);
     sasl_meta       : ASN1EncodingMeta;
-    meta            : ASN1EncodingMeta;
-    seq_meta        : ASN1SequenceMeta;
-    obj             : ASN1Encoding;
-    meta2           : ASN1EncodingMeta;
-    oid             : ASN1ObjectIdentifier;
-    meta3           : ASN1EncodingMeta;
-    meta4           : ASN1EncodingMeta;
-    meta5           : ASN1EncodingMeta;
-    oid2            : ASN1ObjectIdentifier;
-    blob            : bytestring &restofdata;
+    sasl            : bytestring &length=sasl_meta.lengh;
 };
 
 # Modify Request
