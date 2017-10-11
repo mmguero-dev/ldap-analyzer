@@ -389,7 +389,7 @@ refine connection LDAP_Conn += {
 		        gssapi = analyzer_mgr->InstantiateAnalyzer("GSSAPI", bro_analyzer()->Conn()); 
 		        }
 		
-	            if( gssap i)  
+	            if( gssapi )  
                         {
 	                
 	                gssapi->DeliverStream(pdu->gssapi().length(), pdu->gssapi().begin(), is_orig);
@@ -411,7 +411,7 @@ refine connection LDAP_Conn += {
 
             if ( gssapi )
                 {
-                    gssapi->DeliverPacket(pdu->sasl().length(), pdu->sasl().begin(), is_orig);
+                    gssapi->DeliverStream(pdu->sasl().length(), pdu->sasl().begin(), is_orig);
                 }
 	    }
         return true;
