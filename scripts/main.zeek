@@ -80,6 +80,8 @@ event ldap_bind_res(c: connection, pdu : LDAP::LDAPResultPDU) &priority=5
 	# LDAP
     info$messageID = pdu$messageID;
     info$op = "bindResponse";
+    info$result = pdu$result;
+    info$error = pdu$error;
 
     Log::write(LDAP::LOG, info);
     }

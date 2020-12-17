@@ -2,6 +2,7 @@
 =================================
 
 #### This should be compatibile till Zeek 3.1.2.
+> Also this repo is logging the response code and error for a BindRequest.
 
 This package provides an analyzer for Lightweight Directory Access Protocol write operations.  The following operations will be written to ldap.log after running the analyzer:
 
