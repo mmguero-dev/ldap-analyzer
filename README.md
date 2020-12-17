@@ -17,8 +17,8 @@ Additionally, the analyzer will deliver GSSAPI GSS-SPNEGO authentication data in
 
 * `$ git clone https://github.com/git-davi/ldap-analyzer.git`
 * `$ cd ldap-analyzer`
-* `$ ./configure --zeek-dist=/path/to/bro && make`
-* `$ export ZEEK_PLUGIN_PATH=/path/to/ldap-analyzer` or `$ make install`
+* `$ ./configure --zeek-dist=/path/to/zeek && make`
+* `$ export ZEEK_PLUGIN_PATH=/path/to/ldap-analyzer/build` or `$ make install`
 * Check if plugin got loaded `$ zeek -N | grep LDAP` 
 * Run it : `$ zeek -r your_ldap.pcap`
 
