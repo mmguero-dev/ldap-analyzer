@@ -45,7 +45,7 @@ const ports = { 389/tcp };
 
 redef likely_server_ports += { ports };
 
-event bro_init() &priority=5
+event zeek_init() &priority=5
     {
     Log::create_stream(LDAP::LOG, [$columns=Info, $ev=log_ldap, $path="ldap"]);
 
@@ -78,6 +78,8 @@ event ldap_bind_res(c: connection, pdu : LDAP::LDAPResultPDU) &priority=5
 	# LDAP
     info$messageID = pdu$messageID;
     info$op = "bindResponse";
+    info$result = pdu$result;
+    info$error = pdu$error;
 
     Log::write(LDAP::LOG, info);
     }
