@@ -1,0 +1,6 @@
+[package]
+description = LDAP protocol analyzer for Zeek.
+tags = zeek plugin, ldap analyzer, ldap
+plugin_dir = build
+build_command = ./configure --zeek-dist=%(zeek_dist)s && make
+test_command = cd tests && btest -d

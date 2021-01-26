@@ -1,6 +1,0 @@
-[package]
-description = LDAP protocol analyzer for Bro.
-tags = bro plugin, ldap analyzer, ldap
-plugin_dir = build
-build_command = ./configure --bro-dist=%(bro_dist)s && make
-test_command = cd tests && btest -d
