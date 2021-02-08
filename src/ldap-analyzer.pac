@@ -5,7 +5,7 @@
 %}
 
 %header{
-RecordVal * build_ldap_res(LDAPResult *pdu);
+zeek::IntrusivePtr<zeek::Val> build_ldap_res(LDAPResult *pdu);
 %}
 
 %code{
@@ -14,18 +14,18 @@ RecordVal * build_ldap_res(LDAPResult *pdu);
 Builds a, LDAPResult record
 - messageID
 - result of request
-- error string 
+- error string
 */
-RecordVal * build_ldap_res(LDAPResult *pdu)
+zeek::IntrusivePtr<zeek::Val> build_ldap_res(LDAPResult *pdu)
 	{
-	RecordVal *rv = new RecordVal(BifType::Record::LDAP::LDAPResultPDU);
-	rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, TYPE_INT));
-	rv->Assign(1, new Val(${pdu.result}, TYPE_INT));
+	auto rv = zeek::make_intrusive<zeek::RecordVal>(zeek::BifType::Record::LDAP::LDAPResultPDU);
+	rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, zeek::TYPE_INT));
+	rv->Assign(1, zeek::val_mgr->Count(${pdu.result}));
 	rv->Assign(2, asn1_octet_string_to_val(${pdu.error}));
 
 	return rv;
 	}
-	
+
 %}
 
 refine connection LDAP_Conn += {
@@ -34,27 +34,27 @@ refine connection LDAP_Conn += {
 		bool confirmed;
 		bool orig_pdu;
 		bool resp_pdu;
-		
-		analyzer::Analyzer *gssapi;
-		analyzer::Analyzer *krb5;
+
+		zeek::analyzer::Analyzer *gssapi;
+		zeek::analyzer::Analyzer *krb5;
 	%}
 
 	%init{
 		confirmed = false;
 		orig_pdu = false;
 		resp_pdu = false;
-		
+
 		gssapi = 0;
 		krb5 = 0;
 	%}
-	
+
 	%cleanup{
 		if ( gssapi )
 			{
 			gssapi->Done();
 			delete gssapi;
 			}
-		
+
 		if ( krb5 )
 			{
 			krb5->Done();
@@ -87,12 +87,12 @@ refine connection LDAP_Conn += {
 		%{
 		if ( ! ldap_mod_req )
 			return false;
-		
-		RecordVal *rv = new RecordVal(BifType::Record::LDAP::ModifyReqPDU);
 
-		rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, TYPE_INT));
+		auto rv = zeek::make_intrusive<zeek::RecordVal>(zeek::BifType::Record::LDAP::ModifyReqPDU);
+
+		rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, zeek::TYPE_INT));
 		rv->Assign(1, asn1_octet_string_to_val(${pdu.object}));
-		
+
 		std::string fullStr;
 		for ( auto it = ${pdu.mods}->begin(); it != ${pdu.mods}->end(); ++it )
 			{
@@ -124,12 +124,12 @@ refine connection LDAP_Conn += {
 				fullStr.append("/");
 			}
 
-		rv->Assign(2, new StringVal(fullStr));
+		rv->Assign(2, zeek::make_intrusive<zeek::StringVal>(fullStr));
 
-		BifEvent::generate_ldap_mod_req(bro_analyzer(),
-		                                bro_analyzer()->Conn(),
-		                                rv);
-		
+		zeek::BifEvent::enqueue_ldap_mod_req(zeek_analyzer(),
+		                                     zeek_analyzer()->Conn(),
+		                                     std::move(rv));
+
 		return true;
 		%}
 
@@ -138,9 +138,9 @@ refine connection LDAP_Conn += {
 		if ( ! ldap_mod_res )
 			return false;
 
-		BifEvent::generate_ldap_mod_res(bro_analyzer(),
-		                                bro_analyzer()->Conn(),
-		                                build_ldap_res(pdu->result()));
+		zeek::BifEvent::enqueue_ldap_mod_res(zeek_analyzer(),
+		                                      zeek_analyzer()->Conn(),
+		                                      build_ldap_res(pdu->result()));
 
 		return true;
 		%}
@@ -149,14 +149,14 @@ refine connection LDAP_Conn += {
 		%{
 		if ( ! ldap_del_req )
 			return false;
-		
-		RecordVal *rv = new RecordVal(BifType::Record::LDAP::DeleteReqPDU);
-		rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, TYPE_INT));
-		rv->Assign(1, bytestring_to_val(${pdu.request}));
 
-		BifEvent::generate_ldap_del_req(bro_analyzer(),
-		                                bro_analyzer()->Conn(),
-		                                rv);
+		auto rv = zeek::make_intrusive<zeek::RecordVal>(zeek::BifType::Record::LDAP::DeleteReqPDU);
+		rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, zeek::TYPE_INT));
+		rv->Assign(1, binpac::to_stringval(${pdu.request}));
+
+		zeek::BifEvent::enqueue_ldap_del_req(zeek_analyzer(),
+		                                      zeek_analyzer()->Conn(),
+		                                      std::move(rv));
 
 		return true;
 		%}
@@ -166,9 +166,9 @@ refine connection LDAP_Conn += {
 		if ( ! ldap_del_res )
 			return false;
 
-		BifEvent::generate_ldap_del_res(bro_analyzer(),
-		                                bro_analyzer()->Conn(),
-		                                build_ldap_res(pdu->result()));
+		zeek::BifEvent::enqueue_ldap_del_res(zeek_analyzer(),
+		                                      zeek_analyzer()->Conn(),
+		                                      build_ldap_res(pdu->result()));
 
 		return true;
 		%}
@@ -177,11 +177,11 @@ refine connection LDAP_Conn += {
 		%{
 		if ( ! ldap_add_req )
 			return false;
-		
-		RecordVal *rv = new RecordVal(BifType::Record::LDAP::AddReqPDU);
-		rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, TYPE_INT));
+
+		auto rv = zeek::make_intrusive<zeek::RecordVal>(zeek::BifType::Record::LDAP::AddReqPDU);
+		rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, zeek::TYPE_INT));
 		rv->Assign(1, asn1_octet_string_to_val(${pdu.entry}));
-		
+
 		std::string fullStr;
 		auto atts = ${pdu.attributes.atts};
 		for ( auto it = atts->begin(); it != atts->end(); ++it )
@@ -198,11 +198,11 @@ refine connection LDAP_Conn += {
 			fullStr.append("/");
 			}
 
-		rv->Assign(2, new StringVal(fullStr));
+		rv->Assign(2, zeek::make_intrusive<zeek::StringVal>(fullStr));
 
-		BifEvent::generate_ldap_add_req(bro_analyzer(),
-		                                bro_analyzer()->Conn(),
-		                                rv);
+		zeek::BifEvent::enqueue_ldap_add_req(zeek_analyzer(),
+		                                      zeek_analyzer()->Conn(),
+		                                      std::move(rv));
 		return true;
 		%}
 
@@ -211,9 +211,9 @@ refine connection LDAP_Conn += {
 		if ( ! ldap_add_res )
 			return false;
 
-		BifEvent::generate_ldap_add_res(bro_analyzer(),
-		                                bro_analyzer()->Conn(),
-		                                build_ldap_res(pdu->result()));
+		zeek::BifEvent::enqueue_ldap_add_res(zeek_analyzer(),
+		                                      zeek_analyzer()->Conn(),
+		                                      build_ldap_res(pdu->result()));
 
 		return true;
 		%}
@@ -222,14 +222,14 @@ refine connection LDAP_Conn += {
 		%{
 		if ( ! ldap_modDN_req )
 			return false;
-		
-		RecordVal *rv = new RecordVal(BifType::Record::LDAP::ModifyDNReqPDU);
-		rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, TYPE_INT));
+
+		auto rv = zeek::make_intrusive<zeek::RecordVal>(zeek::BifType::Record::LDAP::ModifyDNReqPDU);
+		rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, zeek::TYPE_INT));
 		rv->Assign(1, asn1_octet_string_to_val(${pdu.entry}));
 
 		std::string fullStr;
 		const u_char * newRDN = asn1_octet_string_to_val(${pdu.newrdn})->Bytes();
-		const u_char * newSupe = bytestring_to_val(${pdu.newSuperior})->Bytes();
+		const u_char * newSupe = binpac::to_stringval(${pdu.newSuperior})->Bytes();
 
 		fullStr.append("newRDN: ");
 		fullStr.append((const char*)newRDN);
@@ -250,11 +250,11 @@ refine connection LDAP_Conn += {
 				break;
 			}
 
-		rv->Assign(2, new StringVal(fullStr));
+		rv->Assign(2, zeek::make_intrusive<zeek::StringVal>(fullStr));
 
-		BifEvent::generate_ldap_modDN_req(bro_analyzer(),
-		                                  bro_analyzer()->Conn(),
-		                                  rv);
+		zeek::BifEvent::enqueue_ldap_modDN_req(zeek_analyzer(),
+		                                        zeek_analyzer()->Conn(),
+		                                        std::move(rv));
 		return true;
 		%}
 
@@ -263,9 +263,9 @@ refine connection LDAP_Conn += {
 		if ( ! ldap_modDN_res )
 			return false;
 
-		BifEvent::generate_ldap_modDN_res(bro_analyzer(),
-		                                  bro_analyzer()->Conn(),
-		                                  build_ldap_res(pdu->result()));
+		zeek::BifEvent::enqueue_ldap_modDN_res(zeek_analyzer(),
+		                                        zeek_analyzer()->Conn(),
+		                                        build_ldap_res(pdu->result()));
 
 		return true;
 		%}
@@ -274,22 +274,22 @@ refine connection LDAP_Conn += {
 		%{
 		if ( ldap_bind_req )
 			{
-			RecordVal *rv = new RecordVal(BifType::Record::LDAP::BindReqPDU);
-			rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, TYPE_INT));
+			auto rv = zeek::make_intrusive<zeek::RecordVal>(zeek::BifType::Record::LDAP::BindReqPDU);
+			rv->Assign(0, asn1_integer_to_val(${pdu.messageID}, zeek::TYPE_INT));
 
-			BifEvent::generate_ldap_bind_req(bro_analyzer(),
-			                                 bro_analyzer()->Conn(),
-			                                 rv);
+			zeek::BifEvent::enqueue_ldap_bind_req(zeek_analyzer(),
+			                                       zeek_analyzer()->Conn(),
+			                                       std::move(rv));
 			}
 
-		if( memcmp("\x47\x53\x53\x2d\x53\x50\x4e\x45\x47\x4f", 
-		           asn1_octet_string_to_val(pdu->mechanism())->Bytes(), 
+		if( memcmp("\x47\x53\x53\x2d\x53\x50\x4e\x45\x47\x4f",
+		           asn1_octet_string_to_val(pdu->mechanism())->Bytes(),
 		           10) == 0 )
 			{
 			// "GSS-SPNEGO"
 			if ( ! gssapi )
 				{
-				gssapi = analyzer_mgr->InstantiateAnalyzer("GSSAPI", bro_analyzer()->Conn()); 
+				gssapi = zeek::analyzer_mgr->InstantiateAnalyzer("GSSAPI", zeek_analyzer()->Conn());
 				}
 			if ( gssapi )
 				{
@@ -299,13 +299,13 @@ refine connection LDAP_Conn += {
 
 		return true;
 		%}
-		
+
 	function proc_ldap_bind_res(pdu: BindResPDU, is_orig: bool): bool
 		%{
-		BifEvent::generate_ldap_bind_res(bro_analyzer(),
-		                                 bro_analyzer()->Conn(),
-		                                 build_ldap_res(pdu->result()));
-		
+		zeek::BifEvent::enqueue_ldap_bind_res(zeek_analyzer(),
+		                                       zeek_analyzer()->Conn(),
+		                                       build_ldap_res(pdu->result()));
+
 		if ( ${pdu.oid2}->encoding()->meta()->length() == 9 &&
 		     (memcmp("\x2a\x86\x48\x86\xf7\x12\x01\x02\x02", asn1_oid_to_val(pdu->oid2())->Bytes(), pdu->oid2()->encoding()->meta()->length()) == 0 ||
 		      memcmp("\x2a\x86\x48\x82\xf7\x12\x01\x02\x02", asn1_oid_to_val(pdu->oid2())->Bytes(), pdu->oid2()->encoding()->meta()->length()) == 0 ) )
@@ -313,9 +313,9 @@ refine connection LDAP_Conn += {
 			// krb5 && ms-krb5
 			if ( ! krb5 )
 				{
-				krb5 = analyzer_mgr->InstantiateAnalyzer("KRB", bro_analyzer()->Conn());
+				krb5 = zeek::analyzer_mgr->InstantiateAnalyzer("KRB", zeek_analyzer()->Conn());
 				}
-			
+
 			if ( krb5 && memcmp("\x02\x00", pdu->blob().begin(), 2) == 0 )
 				{
 				// 0x0200 is an AP_REP

@@ -1,11 +1,11 @@
 
-#ifndef BRO_PLUGIN_BRO_LDAP
-#define BRO_PLUGIN_BRO_LDAP
+#ifndef ZEEK_PLUGIN_ZEEK_LDAP
+#define ZEEK_PLUGIN_ZEEK_LDAP
 
 #include <plugin/Plugin.h>
 
 namespace plugin {
-namespace Bro_LDAP {
+namespace Zeek_LDAP {
 
 class Plugin : public ::plugin::Plugin
 {

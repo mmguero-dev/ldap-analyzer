@@ -5,17 +5,17 @@
 #include "LDAP.h"
 
 namespace plugin {
-namespace Bro_LDAP {
+namespace Zeek_LDAP {
 
 class Plugin : public plugin::Plugin {
 public:
-	plugin::Configuration Configure()
+	zeek::plugin::Configuration Configure()
 		{
-		AddComponent(new ::analyzer::Component("LDAP",
+		AddComponent(new zeek::analyzer::Component("LDAP",
 		             ::analyzer::LDAP::LDAP_Analyzer::InstantiateAnalyzer));
 
-		plugin::Configuration config;
-		config.name = "Bro::LDAP";
+		zeek::plugin::Configuration config;
+		config.name = "Zeek::LDAP";
 		config.description = "Lightweight Directory Access Protocol analyzer";
 		return config;
 		}

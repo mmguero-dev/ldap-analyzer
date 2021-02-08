@@ -13,36 +13,36 @@ class LDAP_Analyzer : public tcp::TCP_ApplicationAnalyzer {
 
 typedef struct {
 	unsigned char *ldap_buf;
-	int64 ldap_buf_len;
-	int64 processed_len;
+	int64_t ldap_buf_len;
+	int64_t processed_len;
 	bool building_packet;
 } Endpoint;
 
 public:
-	LDAP_Analyzer(Connection* conn);
+	LDAP_Analyzer(zeek::Connection* conn);
 	~LDAP_Analyzer() override;
 
 	// Overriden from Analyzer.
 	void Done() override;
-	
+
 	void DeliverStream(int len, const u_char* data, bool orig) override;
-	void Undelivered(uint64 seq, int len, bool orig) override;
+	void Undelivered(uint64_t seq, int len, bool orig) override;
 
 	// Overriden from tcp::TCP_ApplicationAnalyzer.
 	void EndpointEOF(bool is_orig) override;
 
-	static analyzer::Analyzer* InstantiateAnalyzer(Connection* conn)
+	static zeek::analyzer::Analyzer* InstantiateAnalyzer(zeek::Connection* conn)
 		{ return new LDAP_Analyzer(conn); }
 
 protected:
 	binpac::LDAP::LDAP_Conn* interp;
 	bool had_gap;
 	int packet_counter;
-	
+
 	Endpoint endp_orig;
 	Endpoint endp_resp;
 };
 
-} } // namespace analyzer::* 
+} } // namespace analyzer::*
 
 #endif

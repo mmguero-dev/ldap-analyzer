@@ -1,7 +1,7 @@
 # Analyzer for Protocol analyzer for LDAP implementations, tested on MS Active Directory
 
 %include binpac.pac
-%include bro.pac
+%include zeek.pac
 
 %extern{
 	#include "analyzer/Manager.h"
@@ -16,7 +16,7 @@ analyzer LDAP withcontext {
 };
 
 # Our connection consists of two flows, one in each direction.
-connection LDAP_Conn(bro_analyzer: BroAnalyzer) {
+connection LDAP_Conn(zeek_analyzer: ZeekAnalyzer) {
 	upflow   = LDAP_Flow(true);
 	downflow = LDAP_Flow(false);
 };
@@ -32,7 +32,7 @@ type LDAP_TCP(is_orig: bool) = record {
 	};
 } &byteorder=littleendian;
 
-# Consumes SASL Header if present 
+# Consumes SASL Header if present
 type LDAP_SASL(is_orig : bool) = record {
 	len          : uint16;
 	header       : bytestring &length = 28;
