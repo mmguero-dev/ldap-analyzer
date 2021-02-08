@@ -124,6 +124,9 @@ refine connection LDAP_Conn += {
 				fullStr.append("/");
 			}
 
+		// TODO: this is broken:
+		// - 1490132359.166339	192.168.0.4	63710	192.168.0.3	389	278	modifyRequest	add serverReference CN=CORPDC2,CN=Computers,DC=rooty,DC=mcroot/	CN=CORPDC2,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=rooty,DC=mcroot	-	-
+		// + 1490132359.166339	192.168.0.4	63710	192.168.0.3	389	278	modifyRequest	add \x90\x81\x09\xb3\xd5U p\x82\xda\xb2\xd5U/	CN=CORPDC2,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=rooty,DC=mcroot	-	-
 		rv->Assign(2, zeek::make_intrusive<zeek::StringVal>(fullStr));
 
 		zeek::BifEvent::enqueue_ldap_mod_req(zeek_analyzer(),
@@ -198,6 +201,9 @@ refine connection LDAP_Conn += {
 			fullStr.append("/");
 			}
 
+		// TODO: this is broken:
+		// - 1490132359.160135	192.168.0.4	63710	192.168.0.3	389	275	addRequest	objectclass server/systemflags 50000000/serverReference CN=CORPDC2,CN=Computers,DC=rooty,DC=mcroot/	CN=CORPDC2,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=rooty,DC=mcroot	-	-
+		// + 1490132359.160135	192.168.0.4	63710	192.168.0.3	389	275	addRequest	2:  \x09\x02\xb3\xd5U \x80\xc8\xe0\xb2\xd5U/ \x09\x02\xb3\xd5U  \x09\x02\xb3\xd5U/ \x09\x02\xb3\xd5U \xf0\xa3U\xb2\xd5U/	CN=CORPDC2,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=rooty,DC=mcroot	-	-
 		rv->Assign(2, zeek::make_intrusive<zeek::StringVal>(fullStr));
 
 		zeek::BifEvent::enqueue_ldap_add_req(zeek_analyzer(),
@@ -250,6 +256,9 @@ refine connection LDAP_Conn += {
 				break;
 			}
 
+		// TODO: this is broken
+		// - 1490132362.210340	192.168.0.4	63720	192.168.0.3	389	290	modDNRequest	newRDN: CN=CORPDC2 newSuperior: OU=Domain Controllers,DC=rooty,DC=mcroot deleteold: true 	CN=CORPDC2,CN=Computers,DC=rooty,DC=mcroot	-	-
+		// + 1490132362.210340	192.168.0.4	63720	192.168.0.3	389	290	modDNRequest	newRDN:  newSuperior: PS\xe6\xb1\xd5U deleteold: true 	CN=CORPDC2,CN=Computers,DC=rooty,DC=mcroot	-	-
 		rv->Assign(2, zeek::make_intrusive<zeek::StringVal>(fullStr));
 
 		zeek::BifEvent::enqueue_ldap_modDN_req(zeek_analyzer(),
